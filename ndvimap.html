@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timor-Leste Vegetation Index</title>
+
+    <link rel="stylesheet"
+    href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { height: 100vh; width: 100%; }
+        .leaflet-control-custom {
+            background: white;
+            padding: 5px;
+            border-radius: 4px;
+            border: 2px solid rgba(0,0,0,0.2);
+        }
+        #cloudCoverContainer {
+            text-align: center;
+            width: 150px;
+        }
+        .measure-handle {
+            background: #ffffff !important;
+            border: 2px solid #d9480f !important;
+            border-radius: 50% !important;
+            width: 7px !important;
+            height: 7px !important;
+            margin-left: -4px !important;
+            margin-top: -4px !important;
+            box-sizing: border-box;
+        }
+    </style>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+</head>
+<body>
+    <input type="date" id="datePicker">
+
+    <div id="cloudCoverContainer" style="display: none;">
+        <label for="cloudCoverSlider">Cloud Cover: <span id="cloudCoverValue">40</span>%</label>
+        <input type="range" id="cloudCoverSlider" min="0" max="100" value="40" style="width: 100%;">
+    </div>
+
+    <div id="map"></div>
+
+    
+    <script>
+       var map = L.map('map').setView([-8.53, 126.185], 14);
+
+       // Create a new Leaflet control for the date picker
+       var datePickerControl = new L.Control({position: 'topright'});
+
+    var osm = L.tileLayer( 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+            attribution:'© OSM'
+        }).addTo(map);
+        var vegindexlink='https://services.sentinel-hub.com/ogc/wms/8c23cd13-b7ee-4580-a595-9218d6531720';
+
+    var ndwi = L.tileLayer.wms( vegindexlink,
+        {
+            layers: '7_NDWI',
+            format: 'image/png',
+            transparent: true,
+            version: '1.1.1',
+            attribution: 'Sentinel Hub',
+            maxcc: 40
+        });
+
+        ndwi.addTo(map);
+
+        var ndvi = L.tileLayer.wms( vegindexlink,
+        {
+            layers: '3_NDVI',
+            format: 'image/png',
+            transparent: true,
+            version: '1.1.1',
+            attribution: 'Sentinel Hub',
+            maxcc: 40
+        });
+
+        var moistureIndex = L.tileLayer.wms( vegindexlink,
+        {
+            layers: '5_MOISTURE-INDEX',
+            format: 'image/png',
+            transparent: true,
+            version: '1.1.1',
+            attribution: 'Sentinel Hub',
+            maxcc: 40
+        });
+        var trueColor = L.tileLayer.wms( vegindexlink,
+        {
+            layers: '1_TRUE_COLOR',
+            format: 'image/png',
+            transparent: true,
+            version: '1.1.1',
+            attribution: 'Sentinel Hub',
+            maxcc: 40
+        });
+        var falseColor = L.tileLayer.wms( vegindexlink,
+        {
+            layers: '2_FALSE_COLOR',
+            format: 'image/png',
+            transparent: true,
+            version: '1.1.1',
+            attribution: 'Sentinel Hub',
+            maxcc: 40
+        });
+
+        datePickerControl.onAdd = function(map) {
+            // Get the date picker element
+            var datePicker = document.getElementById('datePicker');
+            // Add a class for styling and prevent map interaction
+            L.DomUtil.addClass(datePicker, 'leaflet-control-custom');
+            L.DomEvent.disableClickPropagation(datePicker);
+            return datePicker;
+        };
+
+        datePickerControl.addTo(map);
+
+        var cloudCoverControl = new L.Control({position: 'topright'});
+        cloudCoverControl.onAdd = function(map) {
+            var container = document.getElementById('cloudCoverContainer');
+            container.style.display = 'block'; // Make it visible
+            L.DomUtil.addClass(container, 'leaflet-control-custom');
+            L.DomEvent.disableClickPropagation(container);
+            return container;
+        };
+
+        cloudCoverControl.addTo(map);
+
+        var baseMaps = {
+            "OpenStreetMap": osm
+        };
+
+        var overlayMaps = {
+            "NDWI": ndwi,
+            "NDVI": ndvi,
+            "Moisture Index": moistureIndex,
+            "True Color": trueColor,
+            "False Color": falseColor
+
+        };
+
+        L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+        var drawnItems = new L.FeatureGroup();
+        map.addLayer(drawnItems);
+
+        var drawControl = new L.Control.Draw({
+            position: 'topleft',
+            edit: {
+                featureGroup: drawnItems,
+                remove: true
+            },
+            draw: {
+                polyline: {
+                    metric: true,
+                    feet: false,
+                    nautic: false,
+                    shapeOptions: {
+                        color: '#d9480f',
+                        weight: 2.2,
+                        opacity: 0.95,
+                        lineCap: 'round',
+                        lineJoin: 'round'
+                    }
+                },
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true,
+                    shapeOptions: {
+                        color: '#d9480f',
+                        weight: 1.8,
+                        fillColor: '#ff6b3d',
+                        fillOpacity: 0.16
+                    }
+                },
+                rectangle: false,
+                circle: false,
+                marker: false,
+                circlemarker: false
+            }
+        });
+        map.addControl(drawControl);
+
+        map.on('draw:created', function (e) {
+            var layer = e.layer;
+            if (layer instanceof L.Polyline) {
+                layer.setStyle({
+                    color: '#d9480f',
+                    weight: 2.2,
+                    opacity: 0.95,
+                    lineCap: 'round',
+                    lineJoin: 'round'
+                });
+            }
+            if (layer instanceof L.Polygon) {
+                layer.setStyle({
+                    color: '#d9480f',
+                    weight: 1.8,
+                    fillColor: '#ff6b3d',
+                    fillOpacity: 0.16
+                });
+            }
+            drawnItems.addLayer(layer);
+        });
+
+        map.on('draw:drawstart', function (e) {
+            if (e.layerType === 'polyline') {
+                map.getContainer().style.cursor = 'crosshair';
+            }
+        });
+
+        map.on('draw:drawstop', function () {
+            map.getContainer().style.cursor = '';
+        });
+
+        map.on('draw:editstart draw:editstop draw:deletestart draw:deletestop', function () {
+            map.getContainer().style.cursor = '';
+        });
+
+        function updateAllLayers(params) {
+            ndwi.setParams(params);
+            ndvi.setParams(params);
+            moistureIndex.setParams(params);
+            trueColor.setParams(params);
+            falseColor.setParams(params);
+        }
+
+        document
+                .getElementById('datePicker')
+                .addEventListener('change', function() {
+
+            var selectedDate = this.value;
+            updateAllLayers({
+                time: selectedDate
+            });
+        });
+
+        document
+            .getElementById('cloudCoverSlider')
+            .addEventListener('input', function() {
+
+            var cloudCoverValue = this.value;
+            document.getElementById('cloudCoverValue').innerText = cloudCoverValue;
+
+            // Use 'change' event for less frequent updates, or 'input' for real-time
+            // For now, we will update on every input change.
+            updateAllLayers({
+                maxcc: cloudCoverValue
+            });
+        });
+        
+    </script>
+
+    
+</body>
+</html>
