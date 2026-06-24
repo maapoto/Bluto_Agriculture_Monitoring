@@ -1,10 +1,8 @@
-# https://maapoto.github.io/Bluto_Agriculture_Monitoring/
-
 # Timor-Leste Agriculture Monitoring Map
 
 A web-based map application for visualizing various vegetation and color indices for Timor-Leste using Sentinel Hub satellite imagery. This tool is designed for monitoring agricultural and environmental conditions.
 
-!![alt text](image.png)[Screenshot of the application interface showing the map of Timor-Leste with layer controls, a date picker, and a cloud cover slider.]()
+![Screenshot of the application interface showing the map of Timor-Leste with layer controls, a date picker, and a cloud cover slider.]()
 *Note: You can replace the line above with a real screenshot of your application.*
 
 ## Table of Contents
@@ -23,7 +21,7 @@ The application is built as a single, self-contained HTML file, making it lightw
 
 ## Features
 
-- **Interactive Map:** Pan and zoom functionality centered on Timor-Leste, Manatuto, Bluto Agriculcural Field, built with Leaflet.js.
+- **Interactive Map:** Pan and zoom functionality centered on Timor-Leste, built with Leaflet.js.
 - **Multiple Data Layers:**
     - **Base Map:** OpenStreetMap.
     - **Overlay Layers from Sentinel Hub:**
