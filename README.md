@@ -1,4 +1,4 @@
-# Timor-Leste Agriculture Monitoring Map
+# BLUTO, Manatuto, Timor-Leste Agricultural Monitoring Map
 
 A web-based map application for visualizing various vegetation and color indices for Timor-Leste using Sentinel Hub satellite imagery. This tool is designed for monitoring agricultural and environmental conditions.
 
