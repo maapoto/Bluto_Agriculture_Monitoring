@@ -289,7 +289,7 @@
                 return;
             }
 
-            var legendUrl = vegindexlink + '?SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=' + layerId + '&FORMAT=image/png';
+            var legendUrl = vegindexlink + '?SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=' + layerId + '&FORMAT=image/png&WIDTH=60&HEIGHT=200';
             console.log('Updating legend for layer:', layerName, 'with URL:', legendUrl, 'layerId:', layerId);
             legendContainer.innerHTML = '<h4>' + layerName + '</h4>' +
                                         '<img src="' + legendUrl + '" alt="Legend">';
