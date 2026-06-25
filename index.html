@@ -32,6 +32,15 @@
             margin-top: -4px !important;
             box-sizing: border-box;
         }
+        .legend {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .legend h4 {
+            margin: 0 0 5px;
+        }
     </style>
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -149,7 +158,7 @@
             "Moisture Index": moistureIndex,
         };
 
-        L.control.layers(baseMaps, overlayMaps).addTo(map);
+        L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(map);
 
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
@@ -259,6 +268,61 @@
             });
         });
         
+        // --- Legend Control ---
+
+        var legendControl = L.control({position: 'bottomright'});
+
+        legendControl.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info legend');
+            this._div.style.display = 'none'; // Initially hidden
+            return this._div;
+        };
+
+        legendControl.addTo(map);
+
+        function updateLegend(layerName, layerId) {
+            var legendContainer = legendControl.getContainer();
+            
+            // Hide legend for layers that don't need one
+            if (layerId === '1_TRUE_COLOR' || layerId === '2_FALSE_COLOR') {
+                legendContainer.style.display = 'none';
+                return;
+            }
+
+            var legendUrl = vegindexlink + '?SERVICE=WMS&REQUEST=GetLegendGraphic&LAYER=' + layerId + '&FORMAT=image/png';
+            console.log('Updating legend for layer:', layerName, 'with URL:', legendUrl, 'layerId:', layerId);
+            legendContainer.innerHTML = '<h4>' + layerName + '</h4>' +
+                                        '<img src="' + legendUrl + '" alt="Legend">';
+            legendContainer.style.display = 'block';
+        }
+
+        map.on('overlayadd', function(e) {
+            // e.name is the friendly name (e.g., "NDVI")
+            // e.layer.wmsParams.layers is the WMS layer ID (e.g., "3_NDVI")
+            updateLegend(e.name, e.layer.wmsParams.layers);
+        });
+
+        map.on('overlayremove', function(e) {
+            // Find the topmost visible overlay layer that has a legend
+            var activeLegendLayer = null;
+            var layers = ["Moisture Index", "NDWI", "NDVI", "False Color", "True Color"]; // Order from top to bottom in control
+
+            for (var i = 0; i < layers.length; i++) {
+                var layerName = layers[i];
+                if (map.hasLayer(overlayMaps[layerName])) {
+                    activeLegendLayer = { name: layerName, layer: overlayMaps[layerName] };
+                    break; // Found the topmost active layer
+                }
+            }
+            if (activeLegendLayer) {
+                updateLegend(activeLegendLayer.name, activeLegendLayer.layer.wmsParams.layers);
+            } else {
+                legendControl.getContainer().style.display = 'none'; // Hide if no legendable layers are active
+            }
+        });
+
+        // Manually trigger legend for the default layer on load
+        updateLegend("NDWI", "7_NDWI");
     </script>
 
     
