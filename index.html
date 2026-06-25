@@ -138,12 +138,11 @@
         };
 
         var overlayMaps = {
-            "NDWI": ndwi,
-            "NDVI": ndvi,
-            "Moisture Index": moistureIndex,
             "True Color": trueColor,
-            "False Color": falseColor
-
+            "False Color": falseColor,
+            "NDVI": ndvi,
+            "NDWI": ndwi,
+            "Moisture Index": moistureIndex,
         };
 
         L.control.layers(baseMaps, overlayMaps).addTo(map);
