@@ -268,6 +268,34 @@
             });
         });
         
+        // --- Locate Control ---
+        var locateControl = L.control({position: 'topleft'});
+        var userMarker;
+
+        locateControl.onAdd = function(map) {
+            var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+            container.innerHTML = '<a href="#" title="Show my location" role="button" aria-label="Show my location">📍</a>';
+            container.style.width = '26px';
+            container.style.height = '26px';
+            container.style.lineHeight = '26px';
+            container.style.fontSize = '11px';
+            container.style.textAlign = 'topleft';
+
+            L.DomEvent.on(container, 'click', L.DomEvent.stopPropagation)
+                      .on(container, 'click', L.DomEvent.preventDefault)
+                      .on(container, 'click', () => map.locate({setView: true, maxZoom: 16}));
+
+            return container;
+        };
+        locateControl.addTo(map);
+
+        map.on('locationfound', function(e) {
+            if (userMarker) map.removeLayer(userMarker);
+            userMarker = L.marker(e.latlng).addTo(map).bindPopup("You are here").openPopup();
+        });
+
+        map.on('locationerror', (e) => alert(e.message));
+
         // --- Legend Control ---
 
         var legendControl = L.control({position: 'bottomright'});
